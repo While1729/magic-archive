@@ -314,14 +314,19 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
     }
     sizeCanvas(); addEventListener("resize", function(){ sizeCanvas(); draw(); });
     const W = ()=>canvas.width/dpr, H = ()=>canvas.height/dpr;
-    const nodes = M.map((m,i)=>({i, x:40+Math.random()*(W()-80), y:40+Math.random()*(H()-80), vx:0, vy:0}));
+    const cX0 = W()/2, cY0 = H()/2, R0 = Math.max(70, Math.min(W(), H())/2 - 70);
+    const nodes = M.map((m,i)=>{
+      const ang = 2*Math.PI*i/M.length - Math.PI/2;
+      return {i, x: cX0 + R0*Math.cos(ang), y: cY0 + R0*0.82*Math.sin(ang), vx:0, vy:0};
+    });
     const deg = new Array(M.length).fill(0);
     REL_EDGES.forEach(e=>{ deg[e[0]]+=e[2]; deg[e[1]]+=e[2]; });
     const maxW = REL_EDGES.length? REL_EDGES[0][2]:1;
     const maxDeg = Math.max(1, ...deg);
     const radii = M.map((m,i)=> 26 + 9*Math.sqrt(deg[i]/maxDeg));
     const imgs = M.map(m=>{ const im=new Image(); im.src=avatarOf(m); return im; });
-    let sel = null, iter = 0;
+    let sel = null, hov = null, iter = 0, drag = null;
+    let view = {s:1, ox:0, oy:0};
     function dispName(m){
       const cs = Array.from(m.name), n = cs.length;
       return n>12 ? cs.slice(0,12).join("")+"…" : m.name;
@@ -330,6 +335,8 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
       const n = Array.from(nm).length;
       if(n<=4) return 19; if(n<=8) return 15; if(n<=12) return 13; return 12;
     }
+    const SX = x=>x*view.s+view.ox, SY = y=>y*view.s+view.oy;
+    const RR = typeof ctx.roundRect==="function";
 
     function step(){
       for(const a of nodes){
@@ -353,7 +360,7 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
       for(let a=0;a<nodes.length;a++) for(let b=a+1;b<nodes.length;b++){
         const A=nodes[a], B=nodes[b];
         let dx=B.x-A.x, dy=B.y-A.y, d2=dx*dx+dy*dy;
-        const minD = (radii[a]+radii[b]) + 22;
+        const minD = (radii[a]+radii[b]) + 30;
         if(d2 < minD*minD && d2 > 0.0001){
           let d=Math.sqrt(d2), push=(minD-d)*0.5;
           A.x -= dx/d*push; A.y -= dy/d*push;
@@ -363,57 +370,106 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
       for(let a=0;a<nodes.length;a++){
         const n=nodes[a], r=radii[a];
         n.x = Math.max(48+r, Math.min(W()-48-r, n.x));
-        n.y = Math.max(48+r, Math.min(H()-40-r, n.y));
+        n.y = Math.max(48+r, Math.min(H()-44-r, n.y));
       }
     }
     function draw(){
       ctx.clearRect(0,0,W(),H());
+      const focus = sel!=null ? sel : hov;
       ctx.globalCompositeOperation = "lighter";
       for(const [i,j,w] of REL_EDGES){
         const a=nodes[i], b=nodes[j];
-        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
         const wt = Math.log(w+1)/Math.log(maxW+1);
+        const connected = focus!=null && (focus===i||focus===j);
+        const dim = (focus!=null && !connected) ? (sel!=null?0.35:0.55) : 1;
+        ctx.beginPath(); ctx.moveTo(SX(a.x),SY(a.y)); ctx.lineTo(SX(b.x),SY(b.y));
         ctx.lineWidth = 1 + 5*wt;
-        ctx.strokeStyle = (sel!=null && (sel===i||sel===j))
-          ? "rgba(122,199,255,.96)" : "rgba(226,196,132,"+(0.30+0.55*wt).toFixed(3)+")";
+        ctx.strokeStyle = (sel!=null && connected) ? "rgba(122,199,255,.96)"
+          : (sel==null && connected) ? "rgba(255,224,160,.9)"
+          : "rgba(226,196,132,"+((0.30+0.55*wt)*dim).toFixed(3)+")";
         ctx.stroke();
       }
       ctx.globalCompositeOperation = "source-over";
+      const gx = nodes.reduce((s,n)=>s+n.x,0)/nodes.length;
+      const gy = nodes.reduce((s,n)=>s+n.y,0)/nodes.length;
       for(let i=0;i<nodes.length;i++){
-        const n=nodes[i], r = radii[i];
-        ctx.beginPath(); ctx.arc(n.x,n.y,r+4,0,7);
-        ctx.strokeStyle = sel===i ? "#f0d99a" : "rgba(212,178,106,.45)";
-        ctx.lineWidth = sel===i?3:1; ctx.stroke();
+        const n=nodes[i];
+        const r = radii[i]*view.s, nx = SX(n.x), ny = SY(n.y);
+        ctx.beginPath(); ctx.arc(nx,ny,r+4,0,7);
+        ctx.strokeStyle = sel===i ? "#f0d99a" : (hov===i ? "rgba(255,224,160,.85)" : "rgba(212,178,106,.45)");
+        ctx.lineWidth = sel===i?3:(hov===i?2:1); ctx.stroke();
         if(imgs[i].complete && imgs[i].naturalWidth>0){
-          ctx.save(); ctx.beginPath(); ctx.arc(n.x,n.y,r,0,7); ctx.clip();
-          ctx.drawImage(imgs[i], n.x-r, n.y-r, r*2, r*2); ctx.restore();
+          ctx.save(); ctx.beginPath(); ctx.arc(nx,ny,r,0,7); ctx.clip();
+          ctx.drawImage(imgs[i], nx-r, ny-r, r*2, r*2); ctx.restore();
         } else {
-          ctx.beginPath(); ctx.arc(n.x,n.y,r,0,7); ctx.fillStyle="#1a2440"; ctx.fill();
+          ctx.beginPath(); ctx.arc(nx,ny,r,0,7); ctx.fillStyle="#1a2440"; ctx.fill();
         }
-        const nm = dispName(M[i]);
-        const fs = labelFont(nm);
-        ctx.font = "bold "+fs+"px sans-serif"; ctx.textAlign="center";
+        const nm = dispName(M[i]), fs = labelFont(nm);
+        ctx.font = "bold "+fs+"px sans-serif";
         const tw = ctx.measureText(nm).width;
-        const tx = Math.max(tw/2+6, Math.min(W()-tw/2-6, n.x));
-        const labelY = n.y + r + 22;
-        ctx.lineWidth = 3; ctx.strokeStyle = "rgba(9,14,28,.92)";
-        ctx.strokeText(nm, tx, labelY);
+        const dx0 = n.x-gx, dy0 = n.y-gy, dd0 = Math.hypot(dx0,dy0);
+        let tx, ty, align = "center";
+        if(dd0>70 && Math.abs(dx0)>Math.abs(dy0)){
+          align = dx0>0 ? "left" : "right";
+          tx = nx + (dx0>0 ? r+12*view.s : -(r+12*view.s));
+          ty = ny + fs*0.35 + 1;
+        } else if(dd0>70){
+          tx = nx;
+          ty = dy0>0 ? ny + r + 26*view.s : ny - r - 8;
+        } else {
+          tx = nx; ty = ny + r + 26*view.s;
+        }
+        ctx.textAlign = align;
+        if(align==="center"){ tx = Math.max(tw/2+6, Math.min(W()-tw/2-6, tx)); }
+        else if(align==="right"){ tx = Math.max(tw+12, Math.min(W()-12, tx)); }
+        else { tx = Math.max(12, Math.min(W()-tw-12, tx)); }
+        const left = align==="center" ? tx-tw/2 : (align==="right" ? tx-tw : tx);
+        ctx.fillStyle = "rgba(9,14,28,.78)";
+        if(RR){ ctx.beginPath(); ctx.roundRect(left-6, ty-fs-4, tw+12, fs+8, 6); ctx.fill(); }
+        else ctx.fillRect(left-6, ty-fs-4, tw+12, fs+8);
         ctx.fillStyle = sel===i ? "#f0d99a" : "#e6ecf7";
-        ctx.fillText(nm, tx, labelY);
+        ctx.fillText(nm, tx, ty);
       }
+      ctx.textAlign = "center";
     }
     function loop(){
       if(iter<280){ step(); iter++; draw(); requestAnimationFrame(loop); }
       else draw();
     }
-    function hit(x,y){
+    function hit(px,py){
       let best=-1, bd=1e9;
-      for(let i=0;i<nodes.length;i++){ const n=nodes[i]; const d=Math.hypot(x-n.x,y-n.y); if(d<bd){bd=d;best=i;} }
-      return bd<80?best:-1;
+      for(let i=0;i<nodes.length;i++){ const n=nodes[i]; const d=Math.hypot(SX(n.x)-px, SY(n.y)-py); if(d<bd){bd=d;best=i;} }
+      return (best>=0 && bd < Math.max(70, radii[best]*view.s)) ? best : -1;
     }
-    canvas.onclick = e=>{
+    canvas.onmousedown = e=>{ drag = {x:e.clientX, y:e.clientY, ox:view.ox, oy:view.oy, moved:false}; };
+    canvas.onmousemove = e=>{
+      if(drag){
+        if(Math.abs(e.clientX-drag.x)>4 || Math.abs(e.clientY-drag.y)>4) drag.moved = true;
+        view.ox = drag.ox + (e.clientX-drag.x);
+        view.oy = drag.oy + (e.clientY-drag.y);
+        draw(); return;
+      }
       const r=canvas.getBoundingClientRect();
-      sel = hit((e.clientX-r.left)/r.width*W(), (e.clientY-r.top)/r.height*H());
+      const h = hit(e.clientX-r.left, e.clientY-r.top);
+      if(h!==hov){ hov=h; canvas.style.cursor = h>=0?"pointer":"default"; draw(); }
+    };
+    canvas.onmouseleave = ()=>{ if(hov!==null || drag){ hov=null; drag=null; draw(); } };
+    canvas.onwheel = e=>{
+      e.preventDefault();
+      const r=canvas.getBoundingClientRect();
+      const px=e.clientX-r.left, py=e.clientY-r.top;
+      const k = e.deltaY<0 ? 1.12 : 1/1.12;
+      const ns = Math.min(4, Math.max(0.6, view.s*k));
+      view.ox = px - (px-view.ox)*(ns/view.s);
+      view.oy = py - (py-view.oy)*(ns/view.s);
+      view.s = ns; draw();
+    };
+    canvas.ondblclick = ()=>{ view = {s:1,ox:0,oy:0}; draw(); };
+    canvas.onclick = e=>{
+      if(drag && drag.moved){ drag=null; return; }
+      drag=null;
+      const r=canvas.getBoundingClientRect();
+      sel = hit(e.clientX-r.left, e.clientY-r.top);
       if(sel>=0){
         const m=M[sel]; const links=[];
         REL_EDGES.forEach(([i,j,w])=>{ if(i===sel||j===sel){ const o=j===sel?i:j; links.push([M[o].name,w]); } });
@@ -421,6 +477,7 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
         const top = links.slice(0,8).map(l=>l[0]+"·"+l[1]).join("  ");
         $("relDetail").innerHTML = "选中 <span class=\"hi\">"+m.name+"</span>（"+m.messageCount+"条发言）— 互动最多："+ (top||"暂无");
       } else {
+        sel=null; hov=null;
         $("relDetail").innerHTML = "点击节点查看该成员的群内互动";
       }
       draw();
