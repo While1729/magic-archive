@@ -48,7 +48,7 @@ body{overflow:hidden}
 
 /* ===== 左：大头像 + 名牌 ===== */
 #portrait{position:absolute;left:150px;top:560px;width:1000px;height:760px;z-index:2;}
-#portrait .frame{position:relative;width:560px;height:560px;margin:0 auto;}
+#portrait .frame{position:relative;width:535px;height:535px;margin:0 auto;}
 #portrait .frame::before{content:"";position:absolute;inset:-16px;border:2px solid var(--line);
   transform:rotate(2deg);}
 #portrait .frame::after{content:"";position:absolute;inset:-16px;border:1px solid rgba(212,178,106,.18);
@@ -58,7 +58,7 @@ body{overflow:hidden}
 #portrait .frame .ta{position:absolute;left:50%;top:-44px;transform:translateX(-50%);
   font-size:22px;letter-spacing:5px;color:var(--gold);background:rgba(10,16,30,.7);
   padding:4px 18px;border:1px solid var(--line);border-radius:999px;white-space:nowrap;}
-#nameplate{width:660px;margin:26px auto 0;padding:16px 30px 18px;position:relative;
+#nameplate{width:660px;margin:22px auto 0;padding:16px 30px 18px;position:relative;
   background:linear-gradient(180deg,rgba(20,32,58,.9),rgba(11,18,34,.9));
   border:1px solid var(--line);border-left:6px solid var(--gold);
   clip-path:polygon(0 0,100% 0,calc(100% - 26px) 100%,0 100%);}
@@ -103,7 +103,8 @@ body{overflow:hidden}
 .slot .n{font-size:20px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   padding:0 6px;}
 .slot.on .n{color:var(--gold-hi);font-weight:800;}
-.slot .pg{position:absolute;top:-16px;right:8px;font-size:18px;color:var(--gold);}
+.slot .pg{position:absolute;top:-12px;right:8px;font-size:18px;color:var(--gold);
+  z-index:1;text-shadow:0 2px 4px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.8);}
 /* 翻页箭头 */
 #pprev,#pnext{position:absolute;bottom:96px;z-index:3;width:74px;height:96px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;color:var(--gold);
