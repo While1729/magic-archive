@@ -163,7 +163,7 @@ body{overflow:hidden}
 </head>
 <body>
 <div id="stage"><div class="stage-inner" id="stageInner">
-  <div id="bg"><img src="assets/velvet_room.jpg" alt=""><div class="shade"></div></div>
+  <div id="bg"><img src="assets/velvet_room.jpg" alt="" decoding="async"><div class="shade"></div></div>
 
   <div id="hdr">
     <div class="zh">群成员人格档案</div>
@@ -179,7 +179,7 @@ body{overflow:hidden}
   <div id="portrait">
     <div class="frame">
       <div class="ta" id="taLabel">魔女因子议会 · 成员</div>
-      <img id="bigAvatar" src="" alt="成员头像">
+      <img id="bigAvatar" src="" alt="成员头像" decoding="async">
     </div>
     <div id="nameplate">
       <div class="cnt"><div class="n" id="msgCount">0</div><div class="l">条发言</div></div>
@@ -249,7 +249,7 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
     slice.forEach((m,i)=>{
       const s=document.createElement("div");
       s.className="slot"+( (base+i)===cur ? " on":"");
-      s.innerHTML='<div class="pg">'+(base+i+1)+'</div><div class="a"><img src="'+avatarOf(m)+'" alt=""></div><div class="n"></div>';
+      s.innerHTML='<div class="pg">'+(base+i+1)+'</div><div class="a"><img src="'+avatarOf(m)+'" alt="" loading="lazy" decoding="async"></div><div class="n"></div>';
       s.querySelector(".n").textContent=m.name;
       s.onclick=()=>{cur=base+i;render();};
       row.appendChild(s);
@@ -433,8 +433,8 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
       ctx.textAlign = "center";
     }
     function loop(){
-      if(iter<280){ step(); iter++; draw(); requestAnimationFrame(loop); }
-      else draw();
+      while(iter<280){ step(); iter++; }
+      draw();
     }
     function hit(px,py){
       let best=-1, bd=1e9;
