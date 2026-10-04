@@ -353,7 +353,7 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
         const wt = Math.log(w+1)/Math.log(maxW+1);
         ctx.lineWidth = 1 + 5*wt;
         ctx.strokeStyle = (sel!=null && (sel===i||sel===j))
-          ? "rgba(240,217,154,.98)" : "rgba(226,196,132,"+(0.30+0.55*wt).toFixed(3)+")";
+          ? "rgba(122,199,255,.96)" : "rgba(226,196,132,"+(0.30+0.55*wt).toFixed(3)+")";
         ctx.stroke();
       }
       ctx.globalCompositeOperation = "source-over";
