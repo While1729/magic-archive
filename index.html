@@ -323,7 +323,6 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
     const imgs = M.map(m=>{ const im=new Image(); im.src=avatarOf(m); return im; });
     let sel = null, iter = 0;
     function dispName(m){
-      if(String(m.id)==="1827493128") return "符号";
       const cs = Array.from(m.name), n = cs.length;
       return n>12 ? cs.slice(0,12).join("")+"…" : m.name;
     }
