@@ -319,8 +319,18 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
     REL_EDGES.forEach(e=>{ deg[e[0]]+=e[2]; deg[e[1]]+=e[2]; });
     const maxW = REL_EDGES.length? REL_EDGES[0][2]:1;
     const maxDeg = Math.max(1, ...deg);
+    const radii = M.map((m,i)=> 26 + 9*Math.sqrt(deg[i]/maxDeg));
     const imgs = M.map(m=>{ const im=new Image(); im.src=avatarOf(m); return im; });
     let sel = null, iter = 0;
+    function dispName(m){
+      if(String(m.id)==="1827493128") return "符号";
+      const cs = Array.from(m.name), n = cs.length;
+      return n>12 ? cs.slice(0,12).join("")+"…" : m.name;
+    }
+    function labelFont(nm){
+      const n = Array.from(nm).length;
+      if(n<=4) return 19; if(n<=8) return 15; if(n<=12) return 13; return 12;
+    }
 
     function step(){
       for(const a of nodes){
@@ -340,8 +350,21 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
       }
       for(const a of nodes){
         a.x += a.vx; a.y += a.vy;
-        a.x = Math.max(48, Math.min(W()-48, a.x));
-        a.y = Math.max(48, Math.min(H()-48, a.y));
+      }
+      for(let a=0;a<nodes.length;a++) for(let b=a+1;b<nodes.length;b++){
+        const A=nodes[a], B=nodes[b];
+        let dx=B.x-A.x, dy=B.y-A.y, d2=dx*dx+dy*dy;
+        const minD = (radii[a]+radii[b]) + 22;
+        if(d2 < minD*minD && d2 > 0.0001){
+          let d=Math.sqrt(d2), push=(minD-d)*0.5;
+          A.x -= dx/d*push; A.y -= dy/d*push;
+          B.x += dx/d*push; B.y += dy/d*push;
+        }
+      }
+      for(let a=0;a<nodes.length;a++){
+        const n=nodes[a], r=radii[a];
+        n.x = Math.max(48+r, Math.min(W()-48-r, n.x));
+        n.y = Math.max(48+r, Math.min(H()-40-r, n.y));
       }
     }
     function draw(){
@@ -358,7 +381,7 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
       }
       ctx.globalCompositeOperation = "source-over";
       for(let i=0;i<nodes.length;i++){
-        const n=nodes[i], r = 26 + 9*Math.sqrt(deg[i]/maxDeg);
+        const n=nodes[i], r = radii[i];
         ctx.beginPath(); ctx.arc(n.x,n.y,r+4,0,7);
         ctx.strokeStyle = sel===i ? "#f0d99a" : "rgba(212,178,106,.45)";
         ctx.lineWidth = sel===i?3:1; ctx.stroke();
@@ -368,14 +391,20 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
         } else {
           ctx.beginPath(); ctx.arc(n.x,n.y,r,0,7); ctx.fillStyle="#1a2440"; ctx.fill();
         }
+        const nm = dispName(M[i]);
+        const fs = labelFont(nm);
+        ctx.font = "bold "+fs+"px sans-serif"; ctx.textAlign="center";
+        const tw = ctx.measureText(nm).width;
+        const tx = Math.max(tw/2+6, Math.min(W()-tw/2-6, n.x));
+        const labelY = n.y + r + 22;
+        ctx.lineWidth = 3; ctx.strokeStyle = "rgba(9,14,28,.92)";
+        ctx.strokeText(nm, tx, labelY);
         ctx.fillStyle = sel===i ? "#f0d99a" : "#e6ecf7";
-        ctx.font = "bold 19px sans-serif"; ctx.textAlign="center";
-        const nm = M[i].name.length>6 ? M[i].name.slice(0,6)+"…" : M[i].name;
-        ctx.fillText(nm, n.x, n.y+r+24);
+        ctx.fillText(nm, tx, labelY);
       }
     }
     function loop(){
-      if(iter<170){ step(); iter++; draw(); requestAnimationFrame(loop); }
+      if(iter<280){ step(); iter++; draw(); requestAnimationFrame(loop); }
       else draw();
     }
     function hit(x,y){
