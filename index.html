@@ -25,10 +25,6 @@ body{overflow:hidden}
 #bg .shade{position:absolute;inset:0;
   background:
     radial-gradient(120% 120% at 50% 42%, rgba(5,8,18,.18) 0%, rgba(4,6,12,.55) 70%, rgba(2,3,8,.82) 100%);}
-/* 成员氛围光：切换成员时缓慢过渡（方案E+） */
-#bg .glow{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.8s ease;
-  background:radial-gradient(75% 65% at 50% 36%, rgba(208,16,80,.42) 0%, rgba(208,16,80,0) 72%);}
-#bg .glow.on{opacity:1;}
 
 /* 左上标题字 */
 #hdr{position:absolute;top:120px;left:130px;z-index:3;}
@@ -213,8 +209,6 @@ body{overflow:hidden}
   <div id="bg">
     <img src="assets/velvet_room.jpg" alt="" decoding="async">
     <div class="shade"></div>
-    <div class="glow" id="glow1"></div>
-    <div class="glow" id="glow2"></div>
   </div>
 
   <div id="hdr">
@@ -344,7 +338,6 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
   function render(){
     const m = M[cur];
     $("bigAvatar").src = avatarOf(m);
-    applyGlow(m);
     const nmEl = $("memName");
     nmEl.textContent = m.name;
     const nlen = Array.from(m.name).length;
@@ -419,68 +412,6 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
     $("dsQuoteText").textContent=q||"（无摘录）";
     $("dsQuoteSrc").textContent=q? m.name+" · 群内原始发言摘录":"本档案暂无典型证词";
   }
-
-  // ===== 方案E+：成员氛围光（头像主色 + 亮度绑定活跃度，1.8s 交叉淡化） =====
-  let glowCur = 1;                       // 当前亮的 glow 层
-  const MEM_COLORS = new Array(M.length); // 预取成员主色 [r,g,b]
-  const MAX_CNT = Math.max.apply(null, M.map(m=>m.messageCount));
-  function glowAlpha(m){                 // 活跃度 → 光晕强度
-    return 0.20 + 0.34 * Math.pow(m.messageCount/MAX_CNT, 0.6);
-  }
-  function pickColor(url, cb){
-    const im = new Image();
-    im.onload = ()=>{
-      const c = document.createElement("canvas"); c.width = 48; c.height = 48;
-      const cx = c.getContext("2d");
-      cx.drawImage(im, 0, 0, 48, 48);
-      try{
-        const d = cx.getImageData(0, 0, 48, 48).data;
-        let r=0,g=0,b=0,n=0, r2=0,g2=0,b2=0,n2=0;
-        for(let i=0;i<d.length;i+=4){
-          const R=d[i],G=d[i+1],B=d[i+2], mx=Math.max(R,G,B), mn=Math.min(R,G,B);
-          const s = mx===0?0:(mx-mn)/mx;         // 饱和度
-          r+=R; g+=G; b+=B; n++;
-          if(s>0.22){ r2+=R; g2+=G; b2+=B; n2++; } // 只统计有彩色的像素
-        }
-        // 优先用"彩色像素"均值，避免灰白黑稀释
-        if(n2>=4){ r=r2/n2; g=g2/n2; b=b2/n2; }
-        else { r=r/n; g=g/n; b=b/n; }
-        r=Math.round(r); g=Math.round(g); b=Math.round(b);
-        // 再提一步饱和度（避免灰蒙蒙）
-        const l=(r+g+b)/3, k=1.35;
-        r=Math.max(0,Math.min(255,Math.round(l+(r-l)*k)));
-        g=Math.max(0,Math.min(255,Math.round(l+(g-l)*k)));
-        b=Math.max(0,Math.min(255,Math.round(l+(b-l)*k)));
-        cb([r,g,b]);
-      }catch(e){ cb(null); }
-    };
-    im.onerror = ()=>cb(null);
-    im.src = url;
-  }
-  function setGlowColor(rgb, alpha){
-    const next = glowCur===1 ? $("glow2") : $("glow1");
-    const cur  = glowCur===1 ? $("glow1") : $("glow2");
-    const col = rgb ? "rgba("+rgb[0]+","+rgb[1]+","+rgb[2]+","+alpha+")" : "rgba(208,16,80,"+alpha+")";
-    next.style.background = "radial-gradient(75% 65% at 50% 36%, "+col+" 0%, rgba(0,0,0,0) 72%)";
-    next.classList.add("on");
-    cur.classList.remove("on");
-    glowCur = glowCur===1 ? 2 : 1;
-  }
-  function applyGlow(m){
-    const idx = M.indexOf(m);
-    const rgb = MEM_COLORS[idx];
-    setGlowColor(rgb||null, glowAlpha(m));
-    if(!rgb && idx>=0){                 // 未取到色时异步补取
-      pickColor(avatarOf(m), c=>{
-        if(c){
-          MEM_COLORS[idx]=c;
-          if(M[cur]===m) setGlowColor(c, glowAlpha(m));  // 当前成员取色完成 → 立即换上
-        }
-      });
-    }
-  }
-  // 预热全部头像主色
-  M.forEach((m,i)=>{ pickColor(avatarOf(m), c=>{ if(c) MEM_COLORS[i]=c; }); });
 
   $("larr").onclick=()=>{ if(cur>0){cur--;render();} else toast("已是第一位"); };
   $("rarr").onclick=()=>{ if(cur<M.length-1){cur++;render();} else toast("已是最后一位"); };
