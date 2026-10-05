@@ -91,6 +91,42 @@ body{overflow:hidden}
   font-family:"Songti SC","Noto Serif SC","SimSun",serif;text-align:justify;}
 #panel .body p.mo{font-size:24px;color:#cfa8b6;}
 
+/* ===== 中部速览卡（互动 Top3 · 档案完整度 · 典型证词） ===== */
+#dossier{position:absolute;left:1010px;top:300px;width:620px;height:920px;z-index:2;
+  display:flex;flex-direction:column;
+  background:linear-gradient(180deg,#2c0212 0%,#1a0009 55%,#12000a 100%);
+  border:1px solid rgba(232,120,160,.22);border-top:5px solid rgba(208,16,80,.85);
+  border-radius:6px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.45);}
+#dossier .ds-head{display:flex;align-items:baseline;gap:14px;padding:22px 26px 16px;
+  border-bottom:1px solid rgba(232,120,160,.16);}
+#dossier .ds-head .t{font-size:27px;letter-spacing:5px;color:var(--gold-hi);font-weight:900;white-space:nowrap;}
+#dossier .ds-head .s{font-size:16px;color:#9a7a8a;letter-spacing:2px;}
+#dossier .ds-sec{padding:20px 26px 6px;}
+#dossier .ds-t{font-size:19px;color:#d9a8b8;letter-spacing:3px;margin-bottom:12px;font-weight:700;}
+#dossier .ds-t::before{content:"◆ ";color:rgba(208,16,80,.9);font-size:14px;}
+#top3row{display:flex;flex-direction:column;gap:10px;}
+.top3it{display:flex;align-items:center;gap:14px;padding:8px 14px;
+  background:rgba(208,16,80,.06);border:1px solid rgba(232,120,160,.18);border-radius:8px;}
+.top3it .a{width:52px;height:52px;border-radius:8px;overflow:hidden;flex:0 0 52px;
+  border:1px solid rgba(232,160,184,.45);}
+.top3it .a img{width:100%;height:100%;object-fit:cover;}
+.top3it .nm{flex:1;min-width:0;font-size:22px;color:#f7dfe7;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.top3it .w{font-size:19px;color:var(--gold);white-space:nowrap;}
+.top3it .w b{font-size:24px;}
+#dsConfWrap{display:flex;align-items:center;gap:26px;padding:6px 10px 16px;}
+#dsConfRing{flex:0 0 auto;}
+#dsConfSide{flex:1;min-width:0;}
+#dsConfSide .num{font-size:44px;color:var(--gold-hi);font-weight:900;line-height:1;}
+#dsConfSide .cap{font-size:17px;color:#b08a9a;margin-top:8px;line-height:1.5;letter-spacing:1px;}
+#dsQuote{border-top:1px solid rgba(232,120,160,.16);margin-top:4px;padding:20px 26px 24px;flex:1;min-height:0;
+  display:flex;flex-direction:column;}
+#dsQuote .q{font-size:25px;line-height:1.7;color:#f4e3ea;text-align:justify;
+  font-family:"Songti SC","Noto Serif SC","SimSun",serif;overflow:hidden;}
+#dsQuote .q::before{content:"“";color:rgba(208,16,80,.9);font-size:36px;line-height:0;vertical-align:-8px;margin-right:4px;}
+#dsQuote .q::after{content:"”";color:rgba(208,16,80,.9);font-size:36px;line-height:0;vertical-align:-10px;margin-left:4px;}
+#dsQuote .src{margin-top:14px;font-size:16px;color:#8a6a7a;letter-spacing:1px;}
+
 /* ===== 底部槽位条（P3R 队伍面板真实底） ===== */
 #strip{position:absolute;left:0;right:0;bottom:0;height:196px;z-index:2;
   background:
@@ -199,6 +235,29 @@ body{overflow:hidden}
   </div>
 
 
+  <div id="dossier">
+    <div class="ds-head"><div class="t">档案速览</div><div class="s">DOSSIER · 实时演算</div></div>
+    <div class="ds-sec">
+      <div class="ds-t">互动最多</div>
+      <div id="top3row"></div>
+    </div>
+    <div class="ds-sec">
+      <div class="ds-t">档案完整度</div>
+      <div id="dsConfWrap">
+        <div id="dsConfRing"></div>
+        <div id="dsConfSide">
+          <div class="num" id="dsConfNum">—%</div>
+          <div class="cap" id="dsConfCap">基于近月语料抽样观察</div>
+        </div>
+      </div>
+    </div>
+    <div id="dsQuote">
+      <div class="ds-t">典型证词</div>
+      <div class="q" id="dsQuoteText">—</div>
+      <div class="src" id="dsQuoteSrc">群内原始发言摘录</div>
+    </div>
+  </div>
+
   <div id="panel">
     <img class="info" src="assets/p3r/info_badge.webp" alt="INFO" decoding="async">
     <img class="cor" src="assets/p3r/corner_badge.webp" alt="" decoding="async">
@@ -293,6 +352,62 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
     });
     body.scrollTop=0;
     renderSlots();
+    renderDossier(m);
+  }
+
+  // ===== 中部速览卡：互动Top3 / 档案完整度 / 典型证词 =====
+  function confidenceOf(m){
+    const p=(m.paragraphs||[]).find(x=>/可信度/.test(x));
+    const mm=p&&p.match(/可信度[：:]\s*(\d+)%/);
+    return mm? parseInt(mm[1],10):null;
+  }
+  function quoteOf(m){
+    const p=(m.paragraphs||[]).find(x=>x.indexOf("典型证词")===0);
+    if(!p) return null;
+    const q=p.match(/「([^」]+)」/);
+    return q? q[1]:null;
+  }
+  function renderDossier(m){
+    const idx=M.indexOf(m);
+    // ① 互动 Top3
+    const links=[];
+    REL_EDGES.forEach(([i,j,w])=>{ if(i===idx||j===idx){ links.push([j===idx?i:j, w]); } });
+    links.sort((a,b)=>b[1]-a[1]);
+    const top=links.slice(0,3);
+    const row=$("top3row"); row.innerHTML="";
+    if(top.length){
+      top.forEach(([oi,w])=>{
+        const o=M[oi], it=document.createElement("div"); it.className="top3it";
+        it.innerHTML='<div class="a"><img src="'+avatarOf(o)+'" alt="" decoding="async"></div>'
+          +'<div class="nm">'+o.name+'</div>'
+          +'<div class="w"><b>'+w+'</b> 次</div>';
+        row.appendChild(it);
+      });
+    }else{
+      row.innerHTML='<div style="color:#8a6a7a;font-size:20px;padding:8px 2px;">暂无互动记录</div>';
+    }
+    // ② 档案完整度
+    const conf=confidenceOf(m);
+    const ring=$("dsConfRing");
+    if(conf!=null){
+      $("dsConfNum").textContent=conf+"%";
+      const C=2*Math.PI*52, filled=C*conf/100;
+      ring.innerHTML='<svg width="128" height="128" viewBox="0 0 128 128">'
+        +'<circle cx="64" cy="64" r="52" fill="none" stroke="rgba(208,16,80,.22)" stroke-width="10"/>'
+        +'<circle cx="64" cy="64" r="52" fill="none" stroke="#e86aa0" stroke-width="10" stroke-linecap="round"'
+        +' stroke-dasharray="'+filled.toFixed(1)+' '+(C-filled).toFixed(1)+'" transform="rotate(-90 64 64)"/>'
+        +'</svg>';
+      $("dsConfCap").textContent = conf>=75? "语料充分，形象立体"
+        : conf>=55? "语料偏少，部分判断为推测"
+        : "语料稀疏，档案近乎碎片";
+    }else{
+      $("dsConfNum").textContent="—%";
+      ring.innerHTML=""; $("dsConfCap").textContent="暂无观察样本";
+    }
+    // ③ 典型证词
+    const q=quoteOf(m);
+    $("dsQuoteText").textContent=q||"（无摘录）";
+    $("dsQuoteSrc").textContent=q? m.name+" · 群内原始发言摘录":"本档案暂无典型证词";
   }
 
   $("larr").onclick=()=>{ if(cur>0){cur--;render();} else toast("已是第一位"); };
@@ -310,6 +425,7 @@ const REL_EDGES = [[0,1,557],[0,6,514],[0,3,453],[0,4,422],[0,5,376],[0,2,332],[
       const isRel = t.dataset.v==="relation";
       $("portrait").style.display = isRel?"none":"";
       $("panel").style.display = isRel?"none":"";
+      $("dossier").style.display = isRel?"none":"";
       $("rel").classList.toggle("show", isRel);
       if(isRel) initGraph();
     };
