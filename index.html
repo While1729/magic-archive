@@ -534,12 +534,15 @@ const PROFILE_FULL = {"totalMessages": 50704, "durationDays": 84, "start": "2026
     const nlen = Array.from(m.name).length;
     nmEl.style.fontSize = (nlen>10?64 : nlen>8?74 : nlen>6?84 : 96) + "px";
     $("memQQ").textContent = "QQ · " + m.id;
-    $("msgCount").textContent = m.messageCount;
+    // 全量发言数：优先用 PROFILE_FULL 的真实统计，回退到抽样旧值
+    const PF = PROFILE_FULL && PROFILE_FULL.profile && PROFILE_FULL.profile[cur];
+    $("msgCount").textContent = PF ? PF.msgs : m.messageCount;
     $("tagline").textContent = "“"+m.tagline+"”";
     $("phTitle").textContent = "观察月报";
     $("phSub").textContent = m.name + " · " + GROUP_DATA.summaryMonth;
-    const noEl = document.querySelector("#nameplate .no"); if(noEl) noEl.textContent = "NO." + String(cur+1).padStart(3,"0") + " / " + M.length;
-    $("taLabel").textContent = GROUP_DATA.name + " · 成员 " + (cur+1) + " / " + M.length;
+    const dispRank = PF ? PF.rank : (cur+1);
+    const noEl = document.querySelector("#nameplate .no"); if(noEl) noEl.textContent = "NO." + String(dispRank).padStart(3,"0") + " / " + M.length;
+    $("taLabel").textContent = GROUP_DATA.name + " · 成员 " + dispRank + " / " + M.length;
     const body = $("panelBody"); body.innerHTML="";
     // 页签：观察手记 / 全量分析
     const tab=document.createElement("div"); tab.className="pg2tab";
@@ -1089,7 +1092,7 @@ const PROFILE_FULL = {"totalMessages": 50704, "durationDays": 84, "start": "2026
         let extra="";
         if(uni.length) extra += "<br><span class=\"hi\">单向输出</span>："+uni.slice(0,4).join("、");
         if(fast.length) extra += "<br><span class=\"hi\">秒回圈</span>(互回<2分钟)："+fast.slice(0,5).join("、");
-        $("relDetail").innerHTML = "选中 <span class=\"hi\">"+m.name+"</span>（"+m.messageCount+"条发言）— 互动最多："+ (top||"暂无") + extra;
+        $("relDetail").innerHTML = "选中 <span class=\"hi\">"+m.name+"</span>（"+(PF?PF.msgs:m.messageCount)+"条发言）— 互动最多："+ (top||"暂无") + extra;
       } else {
         sel=null; hov=null;
         $("relDetail").innerHTML = "点击节点查看该成员的群内互动 — 全量分析：26人142边，无门槛收录";
