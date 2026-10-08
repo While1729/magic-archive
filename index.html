@@ -873,7 +873,7 @@ const PSYCHO = {"7": {"name": "3sinL", "all_names": ["3sinL"], "msg_count": 2451
     }
 
     const foot=document.createElement("div"); foot.className="pg2foot";
-    foot.textContent = "书记官备注：本报告基于全量语料自动统计生成，无 LLM 二次叙事，数字均来自原始消息记录；心理侧写为规则推断，非临床诊断。";
+    foot.textContent = "书记官备注：本报告基于全量 "+PROFILE_FULL.totalMessages+" 条消息统计生成，无 LLM 二次叙事；观察手记页是早期抽1200条写的定性印象，本页为全量数据交叉验证。第七节心理侧写为规则推断，非临床诊断。";
     body.appendChild(foot);
   }
 
