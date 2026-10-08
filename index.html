@@ -825,11 +825,11 @@ const PSYCHO = {"7": {"name": "3sinL", "all_names": ["3sinL"], "msg_count": 2451
     const p7a=document.createElement("p"); p7a.className="dp";
     p7a.textContent = "基于该成员全部文本发言的语言特征（情绪词、绝对化词、安抚词、论证结构、追发与互动节奏）自动推断；数字为群内相对分位，非临床诊断，仅供娱乐参考。";
     body.appendChild(p7a);
-    const PS = (window.PSY_DATA && PSY_DATA.p && PSY_DATA.p[cur]) || null;
-    if(PS){
+    const PSD = (window.PSY_DATA && PSY_DATA.p && PSY_DATA.p[cur]) || null;
+    if(PSD){
       const big5name=[["O","开放性"],["C","尽责性"],["E","外向性"],["A","宜人性"],["N","神经质"]];
       big5name.forEach((pair,ix)=>{
-        const v = PS.b ? PS.b[ix] : null;
+        const v = PSD.b ? PSD.b[ix] : null;
         const row=document.createElement("div"); row.className="psybar";
         const lb=document.createElement("div"); lb.className="lbl"; lb.textContent=pair[1]; row.appendChild(lb);
         const tr=document.createElement("div"); tr.className="track"; row.appendChild(tr);
@@ -842,18 +842,18 @@ const PSYCHO = {"7": {"name": "3sinL", "all_names": ["3sinL"], "msg_count": 2451
         }
         body.appendChild(row);
       });
-      if(PS.bi && PS.bi.length){
+      if(PSD.bi && PSD.bi.length){
         const m1=document.createElement("div"); m1.className="psy-meta"; m1.textContent="认知偏差线索（按命中次数）："; body.appendChild(m1);
-        PS.bi.forEach(bi=>{
+        PSD.bi.forEach(bi=>{
           const ch=document.createElement("span"); ch.className="psy-chip"; ch.textContent=bi[0]+" ×"+bi[1]; body.appendChild(ch);
         });
       }
       const m2=document.createElement("div"); m2.className="psy-meta";
-      m2.textContent = "互动依恋风格：" + (PS.at||"—") + "　·　价值倾向：" + ((PS.v&&PS.v.length)?PS.v.join(" / "):"—");
+      m2.textContent = "互动依恋风格：" + (PSD.at||"—") + "　·　价值倾向：" + ((PSD.v&&PSD.v.length)?PSD.v.join(" / "):"—");
       body.appendChild(m2);
       const qlab=[["N","神经质·代表句"],["A","宜人性·代表句"],["O","开放性·代表句"],["C","尽责性·代表句"]];
       qlab.forEach((pair,ix)=>{
-        const qs=(PS.q&&PS.q[ix])||[];
+        const qs=(PSD.q&&PSD.q[ix])||[];
         qs.forEach(q=>{
           if(!q) return;
           const qe=document.createElement("div"); qe.className="psyq";
@@ -863,9 +863,9 @@ const PSYCHO = {"7": {"name": "3sinL", "all_names": ["3sinL"], "msg_count": 2451
           body.appendChild(qe);
         });
       });
-      if(PS.lo){
+      if(PSD.lo){
         const warn=document.createElement("p"); warn.className="pg2none";
-        warn.textContent = "该成员有效文本发言仅 "+PS.n+" 条，分数仅供参考";
+        warn.textContent = "该成员有效文本发言仅 "+PSD.n+" 条，分数仅供参考";
         body.appendChild(warn);
       }
     } else {
