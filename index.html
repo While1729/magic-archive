@@ -112,6 +112,7 @@ body{overflow:hidden}
 #panel .body .weekbars .wb .bar{width:100%;background:linear-gradient(180deg,#e86aa0,rgba(208,16,80,.55));border-radius:2px 2px 0 0;min-height:2px;}
 #panel .body .weekbars .wb .lbl{font-size:15px;color:#9d7f90;letter-spacing:0;}
 #panel .body .pg2foot{font-size:18px;color:#7d6372;margin-top:14px;letter-spacing:1px;}
+#panel .body p.dp{font-size:20px;line-height:1.75;color:#e8d5de;margin:8px 0 12px 0;}
 
 /* ===== 中部速览卡（互动 Top3 · 档案完整度 · 典型证词） ===== */
 #dossier{position:absolute;left:1010px;top:300px;width:620px;height:920px;z-index:2;
@@ -544,9 +545,11 @@ const PROFILE_FULL = {"totalMessages": 50704, "durationDays": 84, "start": "2026
     const tab=document.createElement("div"); tab.className="pg2tab";
     const mk=(v,label)=>{const b=document.createElement("button"); b.textContent=label;
       b.className=(pfPage===v)?"on":""; b.onclick=()=>{pfPage=v; render();}; tab.appendChild(b); return b;};
-    mk(0,"观察手记"); mk(1,"全量分析");
+    mk(0,"观察手记"); mk(1,"全量分析"); mk(2,"全量书记官");
     body.appendChild(tab);
-    if(pfPage===1 && PROFILE_FULL && PROFILE_FULL.profile && PROFILE_FULL.profile[cur]){
+    if(pfPage===2 && PROFILE_FULL && PROFILE_FULL.profile && PROFILE_FULL.profile[cur]){
+      renderDeepReport(m, body);
+    }else if(pfPage===1 && PROFILE_FULL && PROFILE_FULL.profile && PROFILE_FULL.profile[cur]){
       renderFullPage(m, body);
     }else{
       (m.paragraphs||[]).forEach(p=>{
@@ -674,6 +677,110 @@ const PROFILE_FULL = {"totalMessages": 50704, "durationDays": 84, "start": "2026
     body.appendChild(bars);
     const foot=document.createElement("div"); foot.className="pg2foot";
     foot.textContent = "本页为全量口径新增档案，原有观察手记保留在上一页，未作改动。";
+    body.appendChild(foot);
+  }
+
+  // ===== 第三页签：全量书记官报告（基于 50704 条全量语料的定性叙述，不抽样） =====
+  function renderDeepReport(m, body){
+    const P = PROFILE_FULL.profile[cur];
+    const S = DEEP.style[cur] || {};
+    const I = DEEP.interests[cur] || [];
+    const myRels = (DEEP.relations||[]).filter(r=>r.a===cur||r.b===cur);
+
+    const h=document.createElement("h2"); h.className="pg2h"; h.textContent="全量书记官报告"; body.appendChild(h);
+    const sub=document.createElement("div"); sub.className="pg2sub";
+    sub.textContent = "FULL CORPUS REPORT · 不抽样，全量 " + PROFILE_FULL.totalMessages + " 条 · " + PROFILE_FULL.durationDays + " 天";
+    body.appendChild(sub);
+
+    // ① 生态位判断
+    const s1=document.createElement("h3"); s1.className="pg2s"; s1.textContent="一、群内生态位"; body.appendChild(s1);
+    const eco=[];
+    if(P.rank<=3) eco.push("群内发言量 Top"+P.rank+"，属于核心输出层，群聊节奏很大程度上由"+M[cur].name+"这类人撑着");
+    else if(P.rank<=10) eco.push("群内发言量排名第 "+P.rank+"，属于稳定活跃层，不垄断话题但每场都在");
+    else if(P.msgs>=50) eco.push("群内发言量排名第 "+P.rank+"，属于轻度参与者，发言集中在特定话题或特定时段");
+    else eco.push("发言量极少（"+P.msgs+" 条），属于潜水观察层，存在感低但偶尔冒一句");
+    if(P.degree>=15) eco.push("互动对象多达 "+P.degree+" 人，是群里的『连接型』人物，谁都聊得来");
+    else if(P.degree>=8) eco.push("互动对象 "+P.degree+" 人，关系网集中在几个固定搭子");
+    else eco.push("互动对象仅 "+P.degree+" 人，社交圈很窄，基本只跟固定几个人说话");
+    eco.forEach(t=>{ const p=document.createElement("p"); p.className="dp"; p.textContent=t; body.appendChild(p); });
+
+    // ② 时间演化
+    const s2=document.createElement("h3"); s2.className="pg2s"; s2.textContent="二、时间演化（84 天）"; body.appendChild(s2);
+    const wk = P.weekly||[];
+    const wkN = wk.filter(x=>x>0).length;
+    const wkNZ = wk.filter(x=>x===0).length;
+    const maxWk = Math.max(1,...wk);
+    const peakWk = wk.indexOf(maxWk);
+    const evo=[];
+    if(wkN>=11) evo.push("84 天里有 "+wkN+" 周都在发言，全程在线，属于『常驻型』成员");
+    else if(wkN>=6) evo.push("活跃周数 "+wkN+" 周，中间有断续，但整体没彻底消失");
+    else evo.push("活跃周数仅 "+wkN+" 周，大部分时间在潜水，只在某些节点冒头");
+    if(wkNZ>=4) evo.push("其中有 "+wkNZ+" 周完全沉默，『蒸发期』明显");
+    if(peakWk>=8) evo.push("发言峰值出现在第 "+(peakWk+1)+" 周（约 8 月中下旬之后），属于后期发力型");
+    else if(peakWk<=3) evo.push("发言峰值出现在第 "+(peakWk+1)+" 周（入群早期），后来慢慢淡了");
+    else evo.push("发言峰值出现在第 "+(peakWk+1)+" 周，属于中段爆发型");
+    evo.forEach(t=>{ const p=document.createElement("p"); p.className="dp"; p.textContent=t; body.appendChild(p); });
+
+    // ③ 说话方式
+    const s3=document.createElement("h3"); s3.className="pg2s"; s3.textContent="三、说话方式"; body.appendChild(s3);
+    const sp=[];
+    if(S.avgLen!=null){
+      if(S.avgLen<=8) sp.push("平均每条消息只有 "+S.avgLen+" 个字，像弹幕一样往外蹦碎句子");
+      else if(S.avgLen<=15) sp.push("平均每条消息 "+S.avgLen+" 字，长短适中，是正常聊天节奏");
+      else sp.push("平均每条消息 "+S.avgLen+" 字，偏好长句表达，一句能说清的事不会拆");
+    }
+    if(S.shortPct!=null && S.shortPct>40) sp.push("超过 "+S.shortPct+"% 的消息在 10 字以内，属于『短句流』");
+    if(S.longPct!=null && S.longPct>8) sp.push("长消息（>50字）占 "+S.longPct+"%，偶尔会写小作文");
+    if(S.nightPct!=null && S.nightPct>8) sp.push("深夜（0-6点）发言占 "+S.nightPct+"%，是夜猫子");
+    if(S.imgPct!=null && S.imgPct>8) sp.push("纯图片消息占 "+S.imgPct+"%，爱发表情包/截图");
+    if(S.streakAvg!=null && S.streakAvg>2.5) sp.push("平均每段连发 "+S.streakAvg+" 条消息，习惯一句话拆成好几条发");
+    if(!sp.length) sp.push("发言样本偏少，说话方式暂未形成稳定画像");
+    sp.forEach(t=>{ const p=document.createElement("p"); p.className="dp"; p.textContent=t; body.appendChild(p); });
+
+    // ④ 关系网
+    const s4=document.createElement("h3"); s4.className="pg2s"; s4.textContent="四、关系网"; body.appendChild(s4);
+    const fixed = myRels.filter(r=>r.type==="固定聊伴");
+    const oneway = myRels.filter(r=>r.type==="单向追随");
+    const pulse = myRels.filter(r=>r.type==="脉冲搭子");
+    const rl=[];
+    if(fixed.length){
+      const names = fixed.slice(0,3).map(r=>{ const oi=r.a===cur?r.b:r.a; return M[oi].name; });
+      rl.push("固定聊伴："+names.join("、")+"——这些关系跨越多周持续双向，是群里最稳的聊天搭子");
+    }
+    if(oneway.length){
+      const ow = oneway.slice(0,2).map(r=>{ const oi=r.a===cur?r.b:r.a; return M[oi].name+"（"+r.dir+"）"; });
+      rl.push("单向互动："+ow.join("、")+"——存在明显的一方主动多、另一方被动接的情况");
+    }
+    if(pulse.length){
+      const pn = pulse.slice(0,2).map(r=>{ const oi=r.a===cur?r.b:r.a; return M[oi].name; });
+      rl.push("脉冲搭子："+pn.join("、")+"——只在某几周突然密集聊，然后又冷却");
+    }
+    if(P.fast && P.fast.length){
+      const fn = P.fast.slice(0,3).map(l=>M[l.o].name);
+      rl.push("秒回圈："+fn.join("、")+"——跟这些人发消息几乎立刻有回音，是真·在线陪伴");
+    }
+    if(!rl.length) rl.push("互动量太少，关系网暂不可考");
+    rl.forEach(t=>{ const p=document.createElement("p"); p.className="dp"; p.textContent=t; body.appendChild(p); });
+
+    // ⑤ 兴趣坐标
+    const s5=document.createElement("h3"); s5.className="pg2s"; s5.textContent="五、兴趣坐标"; body.appendChild(s5);
+    if(I.length){
+      const topI = I.slice(0,5).map(x=>x.k+"("+x.n+"次)").join("、");
+      const p=document.createElement("p"); p.className="dp";
+      p.textContent = "全量语料里此人最常提到的话题："+topI+"。这些关键词构成了他/她在群里的『话题根据地』——群里聊这些的时候他/她一定会冒出来。";
+      body.appendChild(p);
+    } else {
+      const n=document.createElement("div"); n.className="pg2none"; n.textContent="发言过少，兴趣画像暂缺"; body.appendChild(n);
+    }
+
+    // ⑥ 与抽样版的关系
+    const s6=document.createElement("h3"); s6.className="pg2s"; s6.textContent="六、与抽样观察手记的关系"; body.appendChild(s6);
+    const p6=document.createElement("p"); p6.className="dp";
+    p6.textContent = "本页基于全部 "+PROFILE_FULL.totalMessages+" 条消息全量跑出，不抽样。观察手记那一页是早期抽 1200 条写的定性印象，本页是用全量数据做的交叉验证：印象对得上的部分即为稳定结论，对不上的部分以本页为准。";
+    body.appendChild(p6);
+
+    const foot=document.createElement("div"); foot.className="pg2foot";
+    foot.textContent = "书记官备注：本报告基于全量语料自动统计生成，无 LLM 二次叙事，数字均来自原始消息记录。";
     body.appendChild(foot);
   }
 
