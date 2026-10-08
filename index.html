@@ -593,19 +593,19 @@ const PROFILE_FULL = {"totalMessages": 50704, "durationDays": 84, "start": "2026
       body.appendChild(li);
     });
     if(!P.top||!P.top.length){ const n=document.createElement("div"); n.className="pg2none"; n.textContent="无互动记录"; body.appendChild(n); }
-    // ③ 单向输出
-    const s3=document.createElement("h3"); s3.className="pg2s"; s3.textContent="单向输出（我主动 ≥15 · 对方零回应）"; body.appendChild(s3);
+    // ③ 单向输出（仅在真有记录时才显示，不占空节）
     if(P.oneway && P.oneway.length){
+      const s3=document.createElement("h3"); s3.className="pg2s"; s3.textContent="单向输出（我主动 ≥15 · 对方零回应）"; body.appendChild(s3);
       P.oneway.forEach(l=>{
         const li=document.createElement("div"); li.className="pg2li";
         li.innerHTML = '<b>'+M[l.o].name+'</b>：主动 <b>'+l.out+'</b> 次，对方 0 次回应';
         body.appendChild(li);
       });
-    }else{ const n=document.createElement("div"); n.className="pg2none"; n.textContent="无单向输出——与所有互动对象均有来有回"; body.appendChild(n); }
-    // ④ 秒回圈
-    const s4=document.createElement("h3"); s4.className="pg2s"; s4.textContent="秒回圈（对方回复我的中位时间 &lt; 2 分钟，说明一聊就接上）"; body.appendChild(s4);
+    }
+    // ④ 秒回圈（仅在真有记录时才显示）
     const fast = P.fast || [];
     if(fast.length){
+      const s4=document.createElement("h3"); s4.className="pg2s"; s4.textContent="秒回圈（对方回复我的中位时间 &lt; 2 分钟，说明一聊就接上）"; body.appendChild(s4);
       fast.forEach(l=>{
         const li=document.createElement("div"); li.className="pg2li";
         const ra = l.rA==null?"—":(l.rA.toFixed?l.rA.toFixed(1):l.rA);
@@ -613,7 +613,7 @@ const PROFILE_FULL = {"totalMessages": 50704, "durationDays": 84, "start": "2026
         li.innerHTML = '<b>'+M[l.o].name+'</b>：中位 <b>'+ra+'</b> / <b>'+rb+'</b> 分钟';
         body.appendChild(li);
       });
-    }else{ const n=document.createElement("div"); n.className="pg2none"; n.textContent="无秒回圈（响应多在 2 分钟以上）"; body.appendChild(n); }
+    }
     // ⑤ 发言风格画像（B1）
     const S = DEEP.style[cur];
     if(S){
