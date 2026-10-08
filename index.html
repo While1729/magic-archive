@@ -509,7 +509,10 @@ const PROFILE_FULL = {"totalMessages": 50704, "durationDays": 84, "start": "2026
   }
 
   // 按全量发言量排序展示（内部 cur 仍用原 idx）
-  const ORDER = M.map((m,i)=>({i, n:m.messageCount})).sort((a,b)=>b.n-a.n.n);
+  const ORDER = M.map((m,i)=>{
+      const pf = (typeof PROFILE_FULL!=="undefined" && PROFILE_FULL.profile && PROFILE_FULL.profile[i]) ? PROFILE_FULL.profile[i].msgs : m.messageCount;
+      return {i, n: pf};
+    }).sort((a,b)=>b.n-a.n);
   function renderSlots(){
     const row = $("slotRow"); row.innerHTML="";
     const base = page*PER;
