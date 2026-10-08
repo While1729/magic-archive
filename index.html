@@ -748,6 +748,10 @@ const PROFILE_FULL = {"totalMessages": 50704, "durationDays": 84, "start": "2026
       $("portrait").style.display = isRel?"none":"";
       $("panel").style.display = isRel?"none":"";
       $("dossier").style.display = isRel?"none":"";
+      // 关系页隐藏底部档案栏/箭头/铭牌，避免 relDetail 文字压在 slotRow 上
+      ["slotRow","strip","larr","rarr","nameplate","taLabel"].forEach(id=>{
+        const el=$(id); if(el) el.style.display = isRel?"none":"";
+      });
       $("rel").classList.toggle("show", isRel);
       if(isRel) initGraph();
     };
