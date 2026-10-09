@@ -253,10 +253,141 @@ body{overflow:hidden}
   font-size:22px;line-height:1.6;color:var(--ink);min-height:64px;}
 #rel #relDetail .hi{color:#f7dfe7;font-weight:800;}
 
+/* ============ 移动端独立布局（≤900px 停用设计稿缩放，原生纵向卡片流） ============ */
 @media (max-width:900px){
-  #tabs{right:40px;top:26px}
-  .tab{min-width:110px;padding:10px 16px;font-size:18px;letter-spacing:2px}
-  #panel .body .gm-grid{grid-template-columns:repeat(2,1fr);}
+  #stage{position:static!important;transform:none!important;width:100%!important;height:auto!important;overflow:visible!important;display:block;}
+  .stage-inner{position:static!important;width:100%!important;height:auto!important;overflow:visible!important;}
+  body{background:#0d1526;}
+
+  /* 背景：全屏固定 */
+  #bg{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;z-index:-1;}
+  #bg img{width:100%;height:100%;object-fit:cover;}
+
+  /* 顶部标题 */
+  #hdr{position:static!important;padding:26px 18px 4px;text-align:left;}
+  #hdr .zh{font-size:32px;letter-spacing:3px;line-height:1.2;}
+  #hdr .en{font-size:12px;letter-spacing:4px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #hdr .mon{font-size:13px;margin-top:14px;padding:4px 12px;letter-spacing:1px;}
+
+  /* 页签 */
+  #tabs{position:static!important;margin:16px 18px 0;display:flex;gap:8px;}
+  .tab{flex:1;min-width:0;padding:10px 0;font-size:16px;letter-spacing:2px;text-align:center;}
+
+  /* 头像名片 */
+  #portrait{position:static!important;width:100%;height:auto;padding:52px 18px 0;}
+  #portrait .frame{width:64%;aspect-ratio:1;height:auto;margin:0 auto;}
+  #portrait .frame .ta{font-size:13px;letter-spacing:2px;top:-34px;padding:3px 12px;}
+  #portrait .frame::before{inset:-10px;}
+  #nameplate{margin-top:40px;}
+  #nameplate .nm{font-size:34px;letter-spacing:2px;white-space:normal;line-height:1.2;}
+  #nameplate .meta{margin-top:12px;flex-wrap:wrap;gap:10px 14px;}
+  #nameplate .no{font-size:12px;padding:3px 10px;letter-spacing:2px;}
+  #nameplate .qq{font-size:13px;letter-spacing:1px;}
+  #nameplate .cnt .n{font-size:18px;}
+  #nameplate .cnt .l{font-size:12px;}
+
+  /* 档案速览 */
+  #dossier{position:static!important;width:auto;height:auto;margin:22px 14px 0;border-radius:8px;}
+  #dossier .ds-head{padding:14px 16px 10px;gap:8px;}
+  #dossier .ds-head .t{font-size:18px;letter-spacing:3px;}
+  #dossier .ds-head .s{font-size:12px;letter-spacing:1px;}
+  #dossier .ds-sec{padding:12px 16px 4px;}
+  #dossier .ds-t{font-size:14px;letter-spacing:2px;margin-bottom:8px;}
+  #top3row{gap:7px;}
+  .top3it{padding:6px 10px;gap:10px;}
+  .top3it .a{width:38px;height:38px;flex-basis:38px;border-radius:6px;}
+  .top3it .nm{font-size:15px;}
+  .top3it .w{font-size:12px;}
+  .top3it .w b{font-size:15px;}
+  #dsConfWrap{padding:2px 6px 12px;gap:16px;}
+  #dsConfSide .num{font-size:26px;}
+  #dsConfSide .cap{font-size:12px;margin-top:4px;}
+  #dsQuote{padding:12px 16px 16px;margin-top:2px;overflow:visible;flex:none;}
+  #dsQuote .q{font-size:15px;line-height:1.65;}
+  #dsQuote .q::before,#dsQuote .q::after{font-size:22px;}
+  #dsQuote .src{font-size:12px;margin-top:8px;}
+
+  /* 观察月报 */
+  #panel{position:static!important;width:auto;height:auto;margin:22px 14px 0;border-radius:8px;overflow:hidden;}
+  #panel .info{display:none;}
+  #panel .cor{display:none;}
+  #panel .phd{padding:14px 16px 10px;gap:8px;}
+  #panel .phd .t{font-size:19px;letter-spacing:3px;}
+  #panel .phd .s{font-size:12px;}
+  #panel .tagline{padding:10px 16px 4px;font-size:15px;line-height:1.5;}
+  #panel .body{position:static!important;padding:8px 16px 24px;overflow:visible;max-height:none;}
+  #panel .body p{font-size:15px;line-height:1.75;margin:0 0 14px;}
+  #panel .body p.mo{font-size:14px;}
+  #panel .body .pg2tab{margin:0 0 14px;padding-bottom:10px;gap:8px;}
+  #panel .body .pg2tab button{font-size:14px;letter-spacing:2px;padding:10px 0;min-height:44px;}
+  #panel .body h2.pg2h{font-size:19px;letter-spacing:3px;margin:0 0 4px;}
+  #panel .body div.pg2sub{font-size:12px;margin:0 0 12px;}
+  #panel .body h3.pg2s{font-size:16px;margin:16px 0 8px;letter-spacing:2px;}
+  #panel .body .pg2row{font-size:15px;line-height:1.6;padding:2px 0;gap:8px;}
+  #panel .body .pg2row .dim{font-size:13px;}
+  #panel .body .pg2li{font-size:14px;line-height:1.65;padding:4px 0 4px 18px;}
+  #panel .body .pg2li .d{font-size:13px;}
+  #panel .body .pg2none{font-size:14px;padding:2px 0 2px 18px;}
+  #panel .body .weekbars{height:90px;gap:5px;padding:6px 2px 0;}
+  #panel .body .weekbars .wb .lbl{font-size:11px;}
+  #panel .body .pg2foot{font-size:12px;margin-top:10px;}
+  #panel .body p.dp{font-size:13px;margin:6px 0 10px;}
+  /* 心理侧写 */
+  #panel .body .psybar{gap:8px;margin:7px 0;}
+  #panel .body .psybar .lbl{width:64px;font-size:13px;letter-spacing:1px;}
+  #panel .body .psybar .track{height:9px;}
+  #panel .body .psybar .tag{width:44px;font-size:11px;}
+  #panel .body .psybar .val{width:30px;font-size:12px;}
+  #panel .body .psy-chip{font-size:12px;padding:3px 9px;margin:3px 6px 3px 0;}
+  #panel .body .psy-meta{font-size:12px;margin:8px 0 10px;}
+  #panel .body .psyq{font-size:13px;padding:3px 0 3px 10px;margin:8px 0;}
+  #panel .body .psyq .src{font-size:11px;margin-top:3px;}
+  /* 第八节四骑士 */
+  #panel .body .gm-grid{grid-template-columns:repeat(2,1fr);gap:7px;margin:10px 0;}
+  #panel .body .gm-item{padding:8px 8px;}
+  #panel .body .gm-name{font-size:12px;letter-spacing:1px;}
+  #panel .body .gm-cnt{font-size:17px;margin:3px 0;}
+  #panel .body .gm-desc{font-size:11px;}
+  #panel .body .gm-note{font-size:11px;margin:4px 0 2px;}
+  #panel .body .gm-sum{font-size:12px;padding:6px 10px;margin:6px 0 2px;}
+
+  /* 关系图谱 */
+  #rel{position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+    width:auto;height:auto;margin:22px 14px 0;border-radius:8px;min-height:420px;}
+  #rel .rt{padding:12px 14px;gap:6px;flex-wrap:wrap;}
+  #rel .rt .t{font-size:17px;letter-spacing:3px;}
+  #rel .rt .s{font-size:12px;letter-spacing:0;white-space:normal;}
+  #rel #graphCanvas{flex:none;height:340px;}
+  #rel #weekWrap{height:60px;margin:8px 12px 2px;}
+  #rel #relDetail{padding:10px 14px 12px;font-size:14px;line-height:1.55;min-height:0;}
+  #relLegend{display:none;}
+
+  /* 槽位栏（横向滚动） */
+  #strip{position:static!important;width:100%;height:auto;margin-top:22px;padding:14px 12px 18px;
+    border-top:1px solid rgba(232,120,160,.35);}
+  #strip .row{display:flex;gap:10px;height:auto;overflow-x:auto;padding-bottom:6px;
+    -webkit-overflow-scrolling:touch;}
+  #strip .row::-webkit-scrollbar{height:4px}
+  #strip .row::-webkit-scrollbar-thumb{background:rgba(232,120,160,.4);border-radius:4px}
+  .slot{flex:0 0 88px;height:104px;border-radius:10px;}
+  .slot .a{margin:10px auto 6px;width:52px;height:52px;border-radius:8px;}
+  .slot .n{font-size:12px;padding:0 4px;}
+  .slot .pg{font-size:12px;top:-10px;right:4px;}
+
+  /* 翻页箭头 & 左右切换：改为浮动按钮组 */
+  #pprev,#pnext{position:static!important;width:auto;height:auto;flex:1;padding:12px 0;
+    font-size:24px;border-radius:8px;margin-top:12px;}
+  #larr,#rarr{position:static!important;width:auto;height:auto;flex:1;padding:10px 0;
+    font-size:24px;border-radius:8px;}
+  #stageInner{display:flex;flex-direction:column;}
+  #navRow{display:flex;gap:10px;padding:0 14px;}
+  #credit{position:static!important;padding:16px 14px 24px;text-align:center;font-size:11px;line-height:1.6;}
+
+  /* 弹窗与提示 */
+  #modal .card{max-width:92vw;}
+  #modal .nm{font-size:18px;}
+  #modal .x{width:40px;height:40px;font-size:22px;top:-18px;right:-18px;}
+  #toast{font-size:15px;padding:10px 20px;bottom:24px;}
 }
 </style>
 </head>
@@ -343,10 +474,12 @@ body{overflow:hidden}
     <div id="relDetail">点击节点查看该成员的群内互动 — 全量分析：26人142边，无门槛收录</div>
   </div>
 
-  <div id="larr">‹</div>
-  <div id="rarr">›</div>
-  <div id="pprev">«</div>
-  <div id="pnext">»</div>
+  <div id="navRow">
+    <div id="larr">‹</div>
+    <div id="rarr">›</div>
+    <div id="pprev">«</div>
+    <div id="pnext">»</div>
+  </div>
   <div id="strip"><div class="row" id="slotRow"></div></div>
   <div id="credit">UI 素材出自《女神异闻录3 Reload》（©ATLUS），仅供非商用致敬</div>
 </div></div>
